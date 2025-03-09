@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package FraudDetectionService;
+
+option java_multiple_files = true;
+option java_package = "FraudDetectionService";
+option java_outer_classname = "RiskScoreCalculation";
+
+service FraudDetectionService {
+  rpc calculateRiskScore (transactionDetails) returns (riskScore);
+}
+
+message transactionDetails {
+  int64 transaction_id = 1;
+  string email_id = 2;
+  string phone_number = 3;
+  int64 last_user_login = 4;
+  int64 failed_login_attempts = 5;
+  int64 failed_transactions_count = 6;
+  double transaction_amount = 7;
+}
+
+message riskScore {
+  double risk_score = 1;
+}
