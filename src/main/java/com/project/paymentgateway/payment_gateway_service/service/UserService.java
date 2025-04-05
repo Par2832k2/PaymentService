@@ -14,6 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.AuthorizationServiceException;
+
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -46,21 +48,20 @@ public class UserService {
 
     // Create a new User
     public User createUser(User user){
+        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
         modelMapper.typeMap(UserDto.class, User.class)
                 .addMappings(mapper -> mapper.skip(User::setUserId));
-        //User user = modelMapper.map(userDto, User.class);
         userRepo.save(user);
         return userRepo.findByUserName(user.getUserName());
-        //return userRepo.findByUserName(userDto.getUserName());
     }
 
-//    public User retrieveUserByName(String userName) throws ObjectNotFoundException {
-//        User user = userRepo.findByUserName(userName);
-//        if(user == null) {
-//            throw new ObjectNotFoundException("The user with name: "+userName+" is not found");
-//        }
-//        return user;
-//    }
+    public User retrieveUserByName(String userName) throws ObjectNotFoundException {
+        User user = userRepo.findByUserName(userName);
+        if(user == null) {
+            throw new ObjectNotFoundException("The user with name: "+userName+" is not found");
+        }
+        return user;
+    }
 
     // Retrieve all users:
     public List<User> retrieveAllUsers() {
@@ -74,7 +75,7 @@ public class UserService {
             throw new ValidationException("The userId is missing");
         }
         User userFromDB = userRepo.findByUserId(user.getUserId());
-        setUpdatedFieds(userFromDB, user);
+        setUpdatedFields(userFromDB, user);
         if(userFromDB != null){
             if(Objects.equals(userFromDB.getUserName(), userNameFromToken)){
                 userRepo.save(userFromDB);
@@ -149,7 +150,7 @@ public class UserService {
         }
     }
 
-    public void setUpdatedFieds(User userFromDB, User user){
+    public void setUpdatedFields(User userFromDB, User user){
         if(user.getUserName() != null){
             userFromDB.setUserName(user.getUserName());
         }

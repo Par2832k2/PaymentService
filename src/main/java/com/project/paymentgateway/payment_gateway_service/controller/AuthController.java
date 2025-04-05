@@ -41,7 +41,7 @@ public class AuthController {
                         new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
                 isInMemoryUser = true;
             }
-            String token = tokenService.generateToken(loginRequest.getUsername(), isInMemoryUser);
+            String token = tokenService.signIn(loginRequest.getUsername(), loginRequest.getPassword(), isInMemoryUser);
             if(!isInMemoryUser){
                 User loginUser = userRepo.findByUserName(loginRequest.getUsername());
                 loginUser.setLastSuccessfulLogin(LocalDateTime.now());
