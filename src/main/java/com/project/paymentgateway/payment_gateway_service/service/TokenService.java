@@ -2,10 +2,13 @@ package com.project.paymentgateway.payment_gateway_service.service;
 
 import com.project.paymentgateway.payment_gateway_service.ExceptionHandler.ObjectNotFoundException;
 import com.project.paymentgateway.payment_gateway_service.configuration.RsaKeyProperties;
+import com.project.paymentgateway.payment_gateway_service.dao.User;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.access.AuthorizationServiceException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,16 @@ public class TokenService {
         this.rsaKeyProperties = rsaKeyProperties;
         this.userDetailsService = userDetailsService;
         this.userService = userService;
+    }
+
+    public String signIn(String userName, String password, boolean isInMemoryUser) throws ObjectNotFoundException {
+        if(isInMemoryUser) return generateToken(userName, isInMemoryUser);
+        User user = userService.retrieveUserByName(userName);
+        if (BCrypt.checkpw(password, user.getPassword())) {
+            return generateToken(userName, isInMemoryUser);
+        } else {
+            throw new AuthorizationServiceException("The userName and the password does not match");
+        }
     }
 
     //  Generate JWT Token with Expiry
